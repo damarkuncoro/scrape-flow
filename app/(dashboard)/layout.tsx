@@ -4,6 +4,7 @@ import BreadcrumbHeader from '@/components/layout/breadcrumb-header'
 import { ModeToggle } from '@/components/layout/mode-toogle'
 import { DesktopSidebar, MobileSidebar } from '@/components/layout/sidebar'
 import { Separator } from '@/components/ui/separator'
+import { SignedOut, SignInButton, SignUpButton, SignedIn, UserButton } from '@clerk/nextjs'
 import React from 'react'
 
 function Layout({ children }: { children: React.ReactNode }) {
@@ -19,9 +20,13 @@ function Layout({ children }: { children: React.ReactNode }) {
             <MobileSidebar />
             <BreadcrumbHeader />
             
+            
           </div>
           <div className="flex items-center gap-2">
             <ModeToggle />
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
           </div>
         </header>
 
