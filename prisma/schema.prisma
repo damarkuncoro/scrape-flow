@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+
+model Workflow {
+  id          String  @id @default(cuid())
+  userId      String
+  name        String
+  description String?
+
+  definition    String
+  status        String
+  executionPlan String?
+  creditsCost   Int     @default(0)
+
+  lastRunAt     DateTime?
+  lastRunId     String?
+  lastRunStatus String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  executions WorkflowExecution[]
+
+  // User cannnot have two workflows with the same name
+  @@unique([userId, name])
+}
+
+model WorkflowExecution {
+  id              String @id @default(uuid())
+  userId          String
+  trigger         String
+  status          String
+  creditsConsumed Int    @default(0)
+  definition      String @default("{}")
+
+  workflowId String
+  workflow   Workflow @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+
+  phases ExecutionPhase[]
+
+  createdAt   DateTime  @default(now())
+  startedAt   DateTime?
+  completedAt DateTime?
+}
+
+model UserBalance {
+  userId  String @id
+  credits Int    @default(0)
+}
+
+model ExecutionPhase {
+  id          String    @id @default(uuid())
+  userId      String
+  status      String
+  number      Int
+  node        String
+  name        String
+  startedAt   DateTime?
+  completedAt DateTime?
+  inputs      String?
+  outputs     String?
+
+  creditsConsumed Int?
+
+  workflowExecutionId String
+  workflowExecution   WorkflowExecution @relation(fields: [workflowExecutionId], references: [id], onDelete: Cascade)
+
+  logs ExecutionLog[]
+}
+
+model ExecutionLog {
+  id        String   @id @default(uuid())
+  logLevel  String
+  message   String
+  timeStamp DateTime @default(now())
+
+  executionPhaseId String?
+  executionPhase   ExecutionPhase? @relation(fields: [executionPhaseId], references: [id])
+}
